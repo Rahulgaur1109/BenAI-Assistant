@@ -14,3 +14,23 @@ services:
         sync: false
       - key: PORT
         sync: false
+
+  - type: web
+    name: benai-ai-service
+    env: node
+    rootDir: backend/ai-service
+    buildCommand: npm install && npm run render-build
+    startCommand: npm run render-start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: USER_SERVICE_URL
+        sync: false
+      - key: UNIVERSITY_NAME
+        value: Bennett University
+      - key: PORT
+        sync: false
