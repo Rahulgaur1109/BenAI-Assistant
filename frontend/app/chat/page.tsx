@@ -7,7 +7,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "assistant",
-      text: "👋 Hello! I'm BenAI, your assistant for Bennett University. I can help you with:\n\n• Professor information (cabin locations, office hours, phone numbers)\n• Campus locations (hostels, food spots, sports facilities)\n• Academic calendar (exam dates, holidays, deadlines)\n• Events and university information\n\nWhat would you like to know?"
+      text: "Hello. I am BenAI, your assistant for Bennett University. I can help you with:\n\n• Professor information (cabin locations, office hours, phone numbers)\n• Campus locations (hostels, food spots, sports facilities)\n• Academic calendar (exam dates, holidays, deadlines)\n• Events and university information\n\nWhat would you like to know?"
     }
   ]);
   const [input, setInput] = useState("");
@@ -53,7 +53,7 @@ export default function ChatPage() {
     <div className="max-w-5xl mx-auto space-y-6 h-[calc(100vh-120px)] flex flex-col">
       {/* Header */}
       <div className="card-enhanced p-8 text-center animate-slide-in-down">
-        <h1 className="text-4xl font-bold gradient-text mb-3">🤖 AI Assistant</h1>
+        <h1 className="text-4xl font-bold gradient-text mb-3">AI Assistant</h1>
         <p className="text-gray-300 text-lg">Your intelligent companion for Bennett University</p>
       </div>
 
@@ -99,7 +99,7 @@ export default function ChatPage() {
         {/* Quick Questions */}
         {messages.length === 1 && !loading && (
           <div className="px-6 pb-6 border-t border-white/5 bg-gradient-to-t from-white/5 to-transparent">
-            <div className="text-xs text-gray-400 mb-3 font-semibold uppercase tracking-wide">💡 Try asking:</div>
+            <div className="text-xs text-gray-400 mb-3 font-semibold uppercase tracking-wide">Suggested questions</div>
             <div className="flex flex-wrap gap-2">
               {quickQuestions.map((q, i) => (
                 <button

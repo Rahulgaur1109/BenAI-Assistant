@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Card from '@/components/Card';
 
 interface CampusData {
   blocks?: {
@@ -24,6 +23,11 @@ interface CampusData {
   };
 }
 
+type UniversityInfoRow = {
+  key: string;
+  value: CampusData;
+};
+
 export default function CampusMapPage() {
   const [campusData, setCampusData] = useState<CampusData>({});
   const [loading, setLoading] = useState(true);
@@ -33,9 +37,11 @@ export default function CampusMapPage() {
   useEffect(() => {
     async function fetchCampusMap() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_USER_SERVICE_URL}/api/university/campusMap`);
-        const data = await res.json();
-        setCampusData(data.value || data);
+        const baseUrl = process.env.NEXT_PUBLIC_CORE_SERVICE_URL?.replace(/\/$/, '') || 'http://localhost:3020';
+        const res = await fetch(`${baseUrl}/api/university/campusMap`, { cache: 'no-store' });
+        const data: UniversityInfoRow | CampusData = await res.json();
+        const value = (data as UniversityInfoRow)?.value || data;
+        setCampusData((value || {}) as CampusData);
       } catch (error) {
         console.error('Failed to load campus map:', error);
       } finally {
@@ -46,13 +52,13 @@ export default function CampusMapPage() {
   }, []);
 
   const categories = [
-    { id: 'all', name: 'All', icon: '🗺️' },
-    { id: 'hostels', name: 'Hostels', icon: '🏠' },
-    { id: 'academic', name: 'Academic', icon: '📚' },
-    { id: 'food', name: 'Food & Dining', icon: '🍽️' },
-    { id: 'sports', name: 'Sports', icon: '⚽' },
-    { id: 'services', name: 'Services', icon: '🔧' },
-    { id: 'other', name: 'Other', icon: '📍' }
+    { id: 'all', name: 'All' },
+    { id: 'hostels', name: 'Hostels' },
+    { id: 'academic', name: 'Academic' },
+    { id: 'food', name: 'Food & Dining' },
+    { id: 'sports', name: 'Sports' },
+    { id: 'services', name: 'Services' },
+    { id: 'other', name: 'Other' }
   ];
 
   const getAllLocations = () => {
@@ -115,13 +121,13 @@ export default function CampusMapPage() {
       {/* Search and Filter */}
       <div className="card p-6 space-y-4">
         <div className="relative">
-          <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
             type="text"
             placeholder="Search for locations, facilities, or services..."
-            className="input pl-12 w-full"
+            className="input input-with-icon w-full"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -138,7 +144,6 @@ export default function CampusMapPage() {
                   : 'bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300'
               }`}
             >
-              <span className="mr-2">{cat.icon}</span>
               {cat.name}
             </button>
           ))}

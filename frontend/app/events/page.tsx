@@ -1,10 +1,10 @@
 'use client';
 
 import type React from 'react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 async function getEvents() {
-  const url = process.env.NEXT_PUBLIC_CORE_SERVICE_URL?.replace(/\/$/, "") || "http://localhost:3001";
+  const url = process.env.NEXT_PUBLIC_CORE_SERVICE_URL?.replace(/\/$/, "") || "http://localhost:3020";
   try {
     const res = await fetch(`${url}/api/events`, { cache: "no-store" });
     if (!res.ok) return { events: [] };
@@ -24,19 +24,26 @@ interface Event {
   link?: string;
 }
 
-async function EventsContent() {
-  const data = await getEvents();
-  const initialEvents: Event[] = data?.events || [];
-
-  return (
-    <EventsDisplay initialEvents={initialEvents} />
-  );
-}
-
-function EventsDisplay({ initialEvents }: { initialEvents: Event[] }) {
+export default function EventsPage() {
+  const [initialEvents, setInitialEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<"upcoming" | "past">("upcoming");
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const data = await getEvents();
+      if (!active) return;
+      setInitialEvents(data?.events || []);
+      setLoading(false);
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleSearch = () => setSearchTerm(searchInput.trim().toLowerCase());
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -106,7 +113,7 @@ function EventsDisplay({ initialEvents }: { initialEvents: Event[] }) {
     <div className="space-y-6">
       {/* Header */}
       <div className="card-enhanced p-8 text-center animate-slide-in-down">
-        <h1 className="text-4xl font-bold gradient-text mb-3">📅 Academic Calendar</h1>
+        <h1 className="text-4xl font-bold gradient-text mb-3">Academic Calendar</h1>
         <p className="text-gray-300 text-lg">Stay updated with university events and important dates</p>
       </div>
 
@@ -114,14 +121,14 @@ function EventsDisplay({ initialEvents }: { initialEvents: Event[] }) {
       <div className="card p-4 space-y-3 animate-scale-in">
         <div className="flex flex-col md:flex-row gap-3">
           <div className="relative flex-1 min-w-0">
-            <svg className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <div className="flex gap-2">
               <input
                 type="text"
                 placeholder="Search events by title, description, or location"
-                className="input pl-12 w-full"
+                className="input input-with-icon w-full"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -162,6 +169,9 @@ function EventsDisplay({ initialEvents }: { initialEvents: Event[] }) {
       </div>
 
       {/* Timeline */}
+      {loading ? (
+        <div className="card p-8 text-center text-gray-400">Loading academic calendar...</div>
+      ) : (
       <div className="space-y-4">
         {filteredEvents.map((event, index) => {
           const isEventToday = isToday(event.startTime);
@@ -202,12 +212,12 @@ function EventsDisplay({ initialEvents }: { initialEvents: Event[] }) {
                       <div>
                         {isEventToday && (
                           <span className="inline-block px-3 py-1 bg-green-500/20 text-green-300 text-xs font-semibold rounded-full border border-green-500/30 mb-2">
-                            🔥 Today
+                            Today
                           </span>
                         )}
                         {!isEventToday && isEventSoon && (
                           <span className="inline-block px-3 py-1 bg-indigo-500/20 text-indigo-300 text-xs font-semibold rounded-full border border-indigo-500/30 mb-2">
-                            ⏰ Coming Soon
+                            Coming Soon
                           </span>
                         )}
                       </div>
@@ -272,8 +282,9 @@ function EventsDisplay({ initialEvents }: { initialEvents: Event[] }) {
           );
         })}
       </div>
+      )}
 
-      {filteredEvents.length === 0 && (
+      {!loading && filteredEvents.length === 0 && (
         <div className="card p-12 text-center">
           <svg className="w-16 h-16 mx-auto mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -287,5 +298,3 @@ function EventsDisplay({ initialEvents }: { initialEvents: Event[] }) {
     </div>
   );
 }
-
-export default EventsContent;

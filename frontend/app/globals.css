@@ -119,6 +119,10 @@ body {
   color: var(--text-muted);
 }
 
+.input-with-icon {
+  padding-left: 3rem;
+}
+
 /* Animated gradient border */
 @keyframes gradient-rotate {
   0% { background-position: 0% 50%; }

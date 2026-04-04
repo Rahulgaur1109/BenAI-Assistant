@@ -1,10 +1,10 @@
 'use client';
 
 import type React from 'react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 async function getTeachers() {
-  const url = process.env.NEXT_PUBLIC_CORE_SERVICE_URL?.replace(/\/$/, "") || "http://localhost:3001";
+  const url = process.env.NEXT_PUBLIC_CORE_SERVICE_URL?.replace(/\/$/, "") || "http://localhost:3020";
   try {
     const res = await fetch(`${url}/api/teachers`, { cache: "no-store" });
     if (!res.ok) return { teachers: [] };
@@ -25,20 +25,27 @@ interface Teacher {
   phone?: string;
 }
 
-async function TeachersContent() {
-  const data = await getTeachers();
-  const initialTeachers: Teacher[] = data?.teachers || [];
-
-  return (
-    <TeachersDisplay initialTeachers={initialTeachers} />
-  );
-}
-
-function TeachersDisplay({ initialTeachers }: { initialTeachers: Teacher[] }) {
+export default function TeachersPage() {
+  const [initialTeachers, setInitialTeachers] = useState<Teacher[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("all");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const data = await getTeachers();
+      if (!active) return;
+      setInitialTeachers(data?.teachers || []);
+      setLoading(false);
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleSearch = () => setSearchTerm(searchInput.trim().toLowerCase());
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -73,7 +80,7 @@ function TeachersDisplay({ initialTeachers }: { initialTeachers: Teacher[] }) {
     <div className="space-y-6">
       {/* Header */}
       <div className="card-enhanced p-8 text-center animate-slide-in-down">
-        <h1 className="text-4xl font-bold gradient-text mb-3">👨‍🏫 Faculty Directory</h1>
+        <h1 className="text-4xl font-bold gradient-text mb-3">Faculty Directory</h1>
         <p className="text-gray-300 text-lg">Explore our {initialTeachers.length}+ dedicated faculty members</p>
       </div>
 
@@ -82,14 +89,14 @@ function TeachersDisplay({ initialTeachers }: { initialTeachers: Teacher[] }) {
         <div className="grid md:grid-cols-2 gap-4">
           {/* Search */}
           <div className="relative">
-            <svg className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <div className="flex gap-2">
               <input
                 type="text"
                 placeholder="Search by name, specialization, cabin, phone, or email"
-                className="input pl-12 w-full"
+                className="input input-with-icon w-full"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -122,6 +129,9 @@ function TeachersDisplay({ initialTeachers }: { initialTeachers: Teacher[] }) {
       </div>
 
       {/* Faculty Grid */}
+      {loading ? (
+        <div className="card p-8 text-center text-gray-400">Loading faculty records...</div>
+      ) : (
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filteredTeachers.map((t) => (
           <div
@@ -215,8 +225,9 @@ function TeachersDisplay({ initialTeachers }: { initialTeachers: Teacher[] }) {
           </div>
         ))}
       </div>
+      )}
 
-      {filteredTeachers.length === 0 && (
+      {!loading && filteredTeachers.length === 0 && (
         <div className="card p-12 text-center">
           <svg className="w-16 h-16 mx-auto mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 21l-4.35-4.35m0 0a7 7 0 10-9.9 0m9.9 9.9L9.9 9.9" />
@@ -228,5 +239,3 @@ function TeachersDisplay({ initialTeachers }: { initialTeachers: Teacher[] }) {
     </div>
   );
 }
-
-export default TeachersContent;
