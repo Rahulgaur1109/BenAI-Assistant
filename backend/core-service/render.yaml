@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: benai-core-service
+    env: node
+    rootDir: backend/core-service
+    buildCommand: npm install && npm run render-build
+    startCommand: npm run render-start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: PORT
+        sync: false

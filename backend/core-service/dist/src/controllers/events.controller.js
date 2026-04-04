@@ -1,21 +1,28 @@
-import { z } from "zod";
-import prisma from "../lib/prisma";
-export async function listEvents(_req, res) {
-    const events = await prisma.event.findMany({ orderBy: { startTime: "asc" } });
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.listEvents = listEvents;
+exports.createEvent = createEvent;
+const zod_1 = require("zod");
+const prisma_1 = __importDefault(require("../lib/prisma"));
+async function listEvents(_req, res) {
+    const events = await prisma_1.default.event.findMany({ orderBy: { startTime: "asc" } });
     res.json({ events });
 }
-const createEventSchema = z.object({
-    title: z.string().min(1),
-    description: z.string().optional(),
-    startTime: z.string(),
-    endTime: z.string().optional(),
-    location: z.string().optional(),
-    link: z.string().url().optional()
+const createEventSchema = zod_1.z.object({
+    title: zod_1.z.string().min(1),
+    description: zod_1.z.string().optional(),
+    startTime: zod_1.z.string(),
+    endTime: zod_1.z.string().optional(),
+    location: zod_1.z.string().optional(),
+    link: zod_1.z.string().url().optional()
 });
-export async function createEvent(req, res) {
+async function createEvent(req, res) {
     try {
         const data = createEventSchema.parse(req.body);
-        const created = await prisma.event.create({
+        const created = await prisma_1.default.event.create({
             data: {
                 title: data.title,
                 description: data.description || null,
