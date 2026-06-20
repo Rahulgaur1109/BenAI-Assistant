@@ -62,3 +62,7 @@ BenAI is an intelligent campus assistant chatbot designed to help students, fres
 - Prisma ORM
 
 ---
+
+Demo Video Link:- https://drive.google.com/file/d/18sd8GedvI3k5LDHiYNuHhA9SXbZOIJ1G/view?usp=drive_link
+
+Deployed Link:- ben-ai-assistant-cmef.vercel.app
